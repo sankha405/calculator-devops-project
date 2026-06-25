@@ -21,6 +21,15 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Debug Jest
+        run: |
+         node -v
+         npm -v
+         ls -la
+         ls -la node_modules
+         ls -la node_modules/.bin
+         ls -la node_modules/jest/bin
+
       - name: Run Unit Tests
         run: npm test
 
