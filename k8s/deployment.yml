@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: calculator-deployment
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: calculator
+
+  template:
+    metadata:
+      labels:
+        app: calculator
+
+    spec:
+      containers:
+        - name: calculator-container
+          image: calculator-app:v4
+          imagePullPolicy: Never
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+
+          env:
+            - name: APP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: calculator-config
+                  key: APP_NAME
+
+            - name: APP_OWNER
+              valueFrom:
+                secretKeyRef:
+                  name: calculator-secret
+                  key: APP_OWNER
+
+            - name: APP_VERSION
+              valueFrom:
+                secretKeyRef:
+                  name: calculator-secret
+                  key: APP_VERSION
+
+          ports:
+            - containerPort: 3000
