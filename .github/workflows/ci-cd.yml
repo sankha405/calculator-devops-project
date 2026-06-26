@@ -21,6 +21,10 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Run ESLint
+        run: npx eslint .
+
+
       - name: Debug Jest
         run: |
          node -v
