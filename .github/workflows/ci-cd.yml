@@ -18,21 +18,25 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: latest
+
       - name: Install Dependencies
         run: npm install
 
       - name: Run ESLint
         run: npx eslint .
 
-
       - name: Debug Jest
         run: |
-         node -v
-         npm -v
-         ls -la
-         ls -la node_modules
-         ls -la node_modules/.bin
-         ls -la node_modules/jest/bin
+          node -v
+          npm -v
+          ls -la
+          ls -la node_modules
+          ls -la node_modules/.bin
+          ls -la node_modules/jest/bin
 
       - name: Run Unit Tests
         run: npm test
@@ -48,3 +52,22 @@ jobs:
 
       - name: Push Docker Image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/calculator-app:latest
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/secret.yml
+          kubectl apply -f k8s/deployment.yml
+          kubectl apply -f k8s/services.yml
+
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/calculator-deployment
+          kubectl get deployments
+          kubectl get pods
+          kubectl get svc
